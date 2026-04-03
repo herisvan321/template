@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium SIAKAD - Excel Style</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* === TEMA & VARIABEL === */
+        :root {
+            --primary: #0891b2;
+            --primary-light: #22d3ee;
+            --primary-dark: #155e75;
+            --bg-main: #f0fdfa; /* Teal-white background */
+            --bg-glass: rgba(255, 255, 255, 0.8);
+            --bg-blur: blur(20px);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: rgba(8, 145, 178, 0.15);
+            --hover: rgba(8, 145, 178, 0.08);
+            --active-tab: #ffffff;
+            --danger: #ef4444;
+            --success: #10b981;
+            --card-space: #ffffff;
+            --shadow: 0 4px 20px rgba(8, 145, 178, 0.06);
+            --shadow-hover: 0 10px 30px rgba(8, 145, 178, 0.12);
+            --input-bg: #f8fafc;
+        }
+
+        [data-theme="dark"] {
+            --primary: #22d3ee;
+            --primary-light: #67e8f9;
+            --primary-dark: #0891b2;
+            --bg-main: #042f2e;
+            --bg-glass: rgba(4, 47, 46, 0.7);
+            --border: rgba(34, 211, 238, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --hover: rgba(34, 211, 238, 0.12);
+            --active-tab: #134e4a;
+            --card-space: #115e59;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 10px 30px rgba(34, 211, 238, 0.15);
+            --input-bg: #134e4a;
+        }
+
+        /* === RESET === */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { 
+            background-color: var(--bg-main);
+            color: var(--text-main); 
+            overflow: hidden; 
+            transition: all 0.4s ease; 
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            /* Grid Lines Background -> Excel Style Minimalist */
+            background-size: 100px 35px;
+            background-image: 
+                linear-gradient(to right, var(--border) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+        }
+        button { cursor: pointer; border: none; background: none; color: inherit; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        input, select { 
+            background: var(--input-bg); 
+            color: var(--text-main); 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            padding: 10px 14px;
+            outline: none;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
+
+        /* === SCROLLBAR === */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        /* === TOAST === */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; }
+        .toast { 
+            background: var(--bg-glass); 
+            backdrop-filter: var(--bg-blur);
+            border-left: 4px solid var(--primary);
+            color: var(--text-main); 
+            padding: 14px 24px; 
+            border-radius: 8px; 
+            box-shadow: var(--shadow); 
+            animation: slideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px;
+            font-weight: 500;
+        }
+        @keyframes slideIn { from { transform: translateX(120%) scale(0.9); opacity: 0; } to { transform: translateX(0) scale(1); opacity: 1; } }
+
+        /* === LOGIN PAGE === */
+        #login-page { 
+            height: 100vh; display: flex; 
+            position: relative; overflow: hidden;
+        }
+        
+        .login-left {
+            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: linear-gradient(135deg, #0f172a 0%, #134e4a 50%, #0891b2 100%);
+            color: white; padding: 60px; position: relative; overflow: hidden;
+        }
+        .login-left::before {
+            content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(34,211,238,0.2) 0%, transparent 70%);
+            top: -200px; right: -200px; animation: floatOrb 12s ease-in-out infinite;
+            filter: blur(40px);
+        }
+        .login-left::after {
+            content: ''; position: absolute; width: 450px; height: 450px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(20,184,166,0.15) 0%, transparent 70%);
+            bottom: -150px; left: -150px; animation: floatOrb 15s ease-in-out infinite reverse;
+            filter: blur(40px);
+        }
+        @keyframes floatOrb { 0%,100% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(40px,-30px) rotate(10deg); } }
+        
+        .login-left .brand-logo { font-size: 40px; font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; z-index: 2; display: flex; align-items: center; gap: 15px; }
+        .login-left .brand-logo svg { width: 48px; height: 48px; fill: #22d3ee; filter: drop-shadow(0 0 15px rgba(34,211,238,0.6)); }
+        .login-left .brand-tagline { font-size: 16px; opacity: 0.7; font-weight: 400; z-index: 2; margin-bottom: 60px; letter-spacing: 2px; text-transform: uppercase; }
+        .login-left .feature-list { z-index: 2; display: flex; flex-direction: column; gap: 24px; padding-left: 20px; border-left: 1px solid rgba(255,255,255,0.1); }
+        .login-left .feature-item { display: flex; align-items: center; gap: 20px; font-size: 15px; font-weight: 500; }
+        .login-left .feature-item .fi-icon { width: 48px; height: 48px; border-radius: 14px; background: rgba(255,255,255,0.06); display: flex; justify-content: center; align-items: center; flex-shrink: 0; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
+        .login-left .feature-item:hover .fi-icon { background: rgba(34,211,238,0.15); border-color: rgba(34,211,238,0.3); transform: scale(1.1); }
+        .login-left .feature-item .fi-icon svg { width: 24px; height: 24px; fill: #22d3ee; }
+        
+        /* Grid effect on left panel */
+        .login-grid-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.08;
+            background-size: 40px 40px;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.2) 1px, transparent 1px);
+        }
+
+        .login-right {
+            width: 480px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: var(--bg-main); padding: 40px; position: relative;
+        }
+        [data-theme="dark"] .login-right { background: #020617; }
+        
+        .login-box { 
+            width: 100%; max-width: 380px; text-align: left;
+        }
+        .login-box .login-welcome { font-size: 14px; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+        .login-box h2 { color: var(--text-main); margin-bottom: 8px; font-size: 32px; font-weight: 800; }
+        .login-box .login-sub { color: var(--text-muted); margin-bottom: 35px; font-size: 15px; line-height: 1.6; }
+        .login-box label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .login-box input { width: 100%; margin-bottom: 22px; border-radius: 10px; padding: 14px 16px; font-size: 15px; }
+        .login-btn { 
+            width: 100%; padding: 16px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); 
+            color: white; border-radius: 12px; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.35); margin-top: 5px;
+        }
+        .login-btn:hover { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); transform: translateY(-3px); box-shadow: 0 12px 35px rgba(79, 70, 229, 0.5); }
+        .login-footer { margin-top: 30px; text-align: center; font-size: 13px; color: var(--text-muted); }
+        .login-footer span { color: var(--primary); font-weight: 600; }
+        
+        .login-theme-toggle { position: absolute; top: 30px; right: 30px; width: 40px; height: 40px; border-radius: 10px; background: var(--input-bg); border: 1px solid var(--border); display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .login-theme-toggle svg { width: 20px; height: 20px; fill: var(--text-muted); }
+        .login-theme-toggle:hover { border-color: var(--primary); }
+        .login-theme-toggle:hover svg { fill: var(--primary); }
+
+        @media (max-width: 900px) {
+            .login-left { display: none; }
+            .login-right { width: 100%; }
+        }
+
+        /* === APLIKASI UTAMA === */
+        #main-app { display: none; height: 100vh; flex-direction: column; }
+
+        /* 1. TOP BAR */
+        .top-bar { 
+            background: var(--primary); 
+            background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary) 100%);
+            color: white; height: 56px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 50;
+        }
+        .top-bar-left, .top-bar-right { display: flex; align-items: center; gap: 16px; }
+        .app-title { font-weight: 700; font-size: 18px; display: flex; align-items: center; gap: 10px; letter-spacing: 0.5px; }
+        .top-btn { width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; border-radius: 8px; background: rgba(255,255,255,0.1); }
+        .top-btn:hover { background: rgba(255,255,255,0.25); transform: scale(1.05); }
+        .top-btn svg { width: 20px; height: 20px; fill: white; }
+
+        /* 2. RIBBON */
+        .ribbon-container { 
+            background: var(--bg-glass); backdrop-filter: var(--bg-blur); 
+            border-bottom: 1px solid var(--border); z-index: 40; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .ribbon-tabs { display: flex; padding: 0 10px; }
+        .tab-btn { 
+            padding: 12px 20px; font-size: 14px; font-weight: 500; color: var(--text-muted); position: relative; 
+        }
+        .tab-btn:hover { color: var(--primary); }
+        .tab-btn.active { color: var(--primary); font-weight: 600; }
+        .tab-btn.active::after { 
+            content: ''; position: absolute; bottom: 0; left: 10%; width: 80%; height: 3px; 
+            background: var(--primary); border-radius: 3px 3px 0 0; 
+        }
+        
+        .ribbon-content { height: 90px; display: none; align-items: center; padding: 5px 20px; animation: fadeIn 0.3s ease; }
+        .ribbon-content.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .ribbon-group { 
+            display: flex; align-items: stretch; border-right: 1px solid var(--border); padding-right: 15px; margin-right: 15px; height: 100%; gap: 8px; position: relative; padding-bottom: 20px; 
+        }
+        .ribbon-group::after { content: attr(data-title); position: absolute; bottom: 4px; left: 0; width: 100%; text-align: center; font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .ribbon-item { 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; min-width: 65px; border-radius: 8px; font-size: 12px; gap: 6px; font-weight: 500;
+        }
+        .ribbon-item:hover { background: var(--hover); transform: translateY(-2px); }
+        .ribbon-item svg { width: 24px; height: 24px; fill: var(--primary); }
+        .ribbon-item:active { transform: scale(0.95); }
+
+        /* 3. MAIN CONTENT */
+        .content-area { flex: 1; overflow: hidden; display: none; padding: 20px; }
+        .content-area.active { display: flex; flex-direction: column; animation: fadeIn 0.4s ease; }
+
+        /* === DASHBOARD === */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .stat-card { 
+            background: var(--bg-glass); backdrop-filter: var(--bg-blur); padding: 25px; border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--shadow);
+            position: relative; overflow: hidden; display: flex; flex-direction: column;
+        }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(to right, var(--primary), var(--primary-light)); }
+        .stat-card h3 { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; }
+        .stat-card .value { font-size: 32px; font-weight: 800; color: var(--text-main); line-height: 1; }
+        
+        .dashboard-row { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; min-height: 400px; }
+        .chart-container { background: var(--bg-glass); backdrop-filter: var(--bg-blur); padding: 25px; border-radius: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: var(--shadow); }
+        
+        .news-container { background: var(--bg-glass); backdrop-filter: var(--bg-blur); padding: 25px; border-radius: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: var(--shadow); }
+        .news-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .news-list { display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
+        .news-item { padding: 12px; border-radius: 12px; background: var(--hover); border: 1px solid transparent; transition: 0.3s; }
+        .news-item:hover { border-color: var(--primary); transform: translateX(5px); }
+        .news-item .date { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; display: block; }
+        .news-item .title { font-size: 14px; font-weight: 600; color: var(--text-main); line-height: 1.4; }
+
+        canvas { width: 100%; flex: 1; }
+
+        /* === TABLES === */
+        .table-container { background: var(--bg-glass); backdrop-filter: var(--bg-blur); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); }
+        .excel-table { width: 100%; border-collapse: collapse; }
+        .excel-table th, .excel-table td { border-bottom: 1px solid var(--border); padding: 15px 20px; text-align: left; font-size: 14px; }
+        .excel-table th { background: rgba(16, 185, 129, 0.05); font-weight: 600; color: var(--primary-dark); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+        .excel-table tr:hover td { background: var(--hover); }
+
+        /* === POPUP PROFILE === */
+        .profile-popup { 
+            position: absolute; top: 65px; right: 20px; width: 300px; background: var(--bg-glass); backdrop-filter: var(--bg-blur); 
+            border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); 
+            display: none; flex-direction: column; z-index: 1000; overflow: hidden; transform: translateY(-10px); opacity: 0; transition: all 0.3s;
+        }
+        .profile-popup.active { display: flex; transform: translateY(0); opacity: 1; }
+        .profile-header { padding: 25px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; text-align: center; }
+        .profile-avatar { 
+            width: 70px; height: 70px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; 
+            margin: 0 auto 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+        }
+        .profile-avatar svg { width: 40px; height: 40px; fill: var(--primary); }
+        .profile-menu { display: flex; flex-direction: column; padding: 10px 0; }
+        .profile-menu button { padding: 15px 25px; text-align: left; display: flex; align-items: center; gap: 15px; font-weight: 500; }
+        .profile-menu button:hover { background: var(--hover); color: var(--primary); padding-left: 30px; }
+
+        /* === ENHANCED HOVER & MICRO-ANIMATIONS === */
+        .stat-card { transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
+        .stat-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-hover); border-color: var(--primary); }
+        .excel-table tr { transition: background 0.2s; }
+        .product-card:active { transform: scale(0.96); }
+        .ribbon-item { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .tab-btn { transition: all 0.25s; }
+        input, select { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-pay { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .content-area h2 { position: relative; padding-left: 16px; }
+        .content-area h2::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 4px; height: 70%; background: var(--primary); border-radius: 4px; }
+
+        /* === TABLET (768px - 1024px) === */
+        @media (max-width: 1024px) {
+            .top-bar { padding: 0 15px; }
+            .ribbon-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+            .ribbon-tabs::-webkit-scrollbar { display: none; }
+            .tab-btn { padding: 12px 14px; font-size: 13px; white-space: nowrap; }
+            .ribbon-content { height: auto; min-height: 80px; flex-wrap: wrap; padding: 8px 15px; }
+            .ribbon-group { padding-bottom: 15px; margin-right: 10px; padding-right: 10px; }
+            .content-area { padding: 15px; }
+            .card-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+            .stat-card .value { font-size: 24px; }
+            .product-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+            .cart-section { width: 320px; }
+            #kasir-visual-layout { gap: 15px; padding: 0 15px !important; }
+            /* Mobile adjustments */
+            #akademik-layout .giant-total { font-size: 36px !important; }
+        }
+
+        /* === SMARTPHONE (< 768px) === */
+        @media (max-width: 768px) {
+            body { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100vh; }
+            #main-app { height: auto; min-height: 100vh; }
+
+            /* Top bar compact */
+            .top-bar { height: 50px; padding: 0 12px; }
+            .app-title { font-size: 15px; gap: 8px; }
+            .app-title svg { width: 20px; height: 20px; }
+            .top-btn { width: 32px; height: 32px; border-radius: 6px; }
+            .top-btn svg { width: 17px; height: 17px; }
+            .top-bar-right { gap: 8px; }
+            .top-bar-right > div { display: none; } /* hide divider */
+
+            /* Ribbon compact horizontal scroll */
+            .ribbon-container { overflow: hidden; }
+            .ribbon-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 0 5px; }
+            .ribbon-tabs::-webkit-scrollbar { display: none; }
+            .tab-btn { padding: 10px 14px; font-size: 12px; white-space: nowrap; }
+            .ribbon-content { height: auto; min-height: 70px; flex-wrap: wrap; padding: 8px 12px; }
+            .ribbon-group { border-right: none; margin-right: 0; padding-right: 0; padding-bottom: 10px; margin-bottom: 0; flex-wrap: wrap; justify-content: center; width: 100%; }
+            .ribbon-group::after { display: none; }
+            .ribbon-item { min-width: 55px; font-size: 11px; padding: 6px; }
+            .ribbon-item svg { width: 20px; height: 20px; }
+
+            /* Content */
+            .content-area { padding: 15px 12px; overflow-y: auto; overflow-x: hidden; }
+            .content-area h2 { font-size: 18px !important; margin-bottom: 15px !important; }
+
+            /* Dashboard */
+            .card-grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 15px; }
+            .stat-card { padding: 20px; }
+            .stat-card .value { font-size: 22px; }
+            .chart-container { padding: 15px; min-height: 200px; }
+
+            /* Kasir Visual */
+            .kasir-container { flex-direction: column; overflow-y: auto; }
+            #kasir-visual-layout { flex-direction: column !important; height: auto !important; gap: 15px !important; padding: 0 12px !important; overflow-y: auto !important; }
+            #kasir-visual-layout .product-section { flex: none !important; min-height: 350px; }
+            #kasir-visual-layout .product-filter { margin-bottom: 12px !important; }
+            #kasir-visual-layout #product-display { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)) !important; gap: 10px !important; max-height: 350px; }
+            #kasir-visual-layout .cart-section { width: 100% !important; min-height: 300px; margin-bottom: 20px; }
+
+            /* Kasir BEEPOS */
+            #kasir-beepos-layout { overflow-y: auto !important; height: auto !important; min-height: 100%; }
+            #kasir-beepos-layout > div:first-child { flex-direction: column !important; padding: 12px 15px !important; gap: 12px; }
+            #kasir-beepos-layout > div:first-child > div:last-child { text-align: center !important; }
+            #kasir-beepos-layout > div:first-child > div:last-child > div:last-child { font-size: 32px !important; }
+            #kasir-beepos-layout > div:nth-child(2) { overflow-x: auto; gap: 15px !important; padding: 10px 15px !important; flex-wrap: nowrap !important; white-space: nowrap; }
+            #kasir-beepos-layout > div:last-child { flex-direction: column !important; }
+            #kasir-beepos-layout > div:last-child > div:first-child { overflow-x: auto; }
+            #kasir-beepos-layout > div:last-child > div:last-child { width: 100% !important; }
+            #kasir-beepos-layout > div:last-child > div:last-child > div:first-child { flex-direction: row !important; flex-wrap: wrap !important; padding: 12px !important; }
+            #kasir-beepos-layout > div:last-child > div:last-child > div:first-child button { flex: 1 1 45%; }
+
+            /* Tables */
+            .table-container { border-radius: 12px; overflow-x: auto; }
+            .excel-table th, .excel-table td { padding: 10px 12px; font-size: 12px; white-space: nowrap; }
+
+            /* Profile popup */
+            .profile-popup { width: 280px; right: 10px; top: 55px; }
+            .profile-header { padding: 20px; }
+            .profile-avatar { width: 55px; height: 55px; }
+
+            /* Modal */
+            #manual-add-modal > div { width: 95% !important; padding: 15px !important; max-height: 85vh !important; }
+
+            /* Toast */
+            #toast-container { bottom: 10px; right: 10px; left: 10px; }
+            .toast { padding: 10px 16px; font-size: 13px; }
+        }
+
+        /* === SMALL PHONES (< 480px) === */
+        @media (max-width: 480px) {
+            .login-right { padding: 30px 20px; }
+            .login-box h2 { font-size: 26px; }
+            .login-box .login-sub { font-size: 14px; margin-bottom: 25px; }
+            .login-box input { padding: 12px 14px; font-size: 14px; margin-bottom: 18px; }
+            .login-btn { padding: 14px; font-size: 14px; }
+            .login-theme-toggle { top: 15px; right: 15px; }
+            .tab-btn { padding: 8px 10px; font-size: 11px; }
+            .app-title { font-size: 14px; }
+            .top-bar { height: 46px; }
+            .stat-card { padding: 16px; }
+            .stat-card .value { font-size: 20px; }
+            .stat-card h3 { font-size: 12px; margin-bottom: 8px; }
+            #kasir-visual-layout #product-display { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+
+        /* === LANDSCAPE PHONE FIX === */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .login-left { padding: 30px; }
+            .login-left .brand-logo { font-size: 32px; margin-bottom: 10px; }
+            .login-left .brand-tagline { margin-bottom: 20px; font-size: 14px; }
+            .login-left .feature-list { gap: 12px; }
+            .login-left .feature-item { font-size: 13px; }
+            .login-right { padding: 30px 40px; }
+            .login-box h2 { font-size: 26px; }
+            .login-box input { margin-bottom: 14px; padding: 10px 14px; }
+        }
+
+        /* === LARGE DESKTOP (>1400px) === */
+        @media (min-width: 1400px) {
+            .product-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+            .stat-card .value { font-size: 32px; }
+            .card-grid { gap: 25px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+
+    <!-- LOGIN PAGE -->
+    <div id="login-page">
+        <!-- Left Panel: Branding -->
+        <div class="login-left">
+            <div class="login-grid-overlay"></div>
+            <div class="brand-logo">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                NexaAkademik
+            </div>
+            <div class="brand-tagline">Sistem Informasi Akademik</div>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="fi-icon"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5.89 12.55L12 15.89l6.11-3.34c.66.36 1.11 1.05 1.11 1.84 0 .5-.18.96-.47 1.33L12 21l-6.75-5.94c-.29-.37-.47-.83-.47-1.33 0-.79.45-1.48 1.11-1.84z"/></svg></div>
+                    <span>Manajemen Data Mahasiswa & Alumni</span>
+                </div>
+                <div class="feature-item">
+                    <div class="fi-icon"><svg viewBox="0 0 24 24"><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 11-6-11-6z"/></svg></div>
+                    <span>KRS Online & Jadwal Perkuliahan</span>
+                </div>
+                <div class="feature-item">
+                    <div class="fi-icon"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>
+                    <span>Transkrip Nilai & E-KHS Otomatis</span>
+                </div>
+                <div class="feature-item">
+                    <div class="fi-icon"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg></div>
+                    <span>Integrasi Pembayaran UKT/SPP</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Form -->
+        <div class="login-right">
+            <button class="login-theme-toggle" onclick="toggleTheme()">
+                <svg viewBox="0 0 24 24" class="login-sun"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zm-3.21 13.7l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/></svg>
+                <svg viewBox="0 0 24 24" class="login-moon" style="display:none;"><path d="M10 2c-1.82 0-3.53.5-5 1.35C7.99 5.08 10 8.3 10 12s-2.01 6.92-5 8.65C6.47 21.5 8.18 22 10 22c5.52 0 10-4.48 10-10S15.52 2 10 2z"/></svg>
+            </button>
+            <div class="login-box">
+                <div class="login-welcome">Selamat Datang</div>
+                <h2>Masuk ke Dashboard</h2>
+                <p class="login-sub">Silakan masukkan kredensial Anda untuk mengakses sistem akademik.</p>
+                <label>Username</label>
+                <input type="text" id="username" placeholder="NIM / NIDN" value="admin">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Masukkan password" value="admin">
+                <button class="login-btn" onclick="appLogin()">Masuk Dashboard</button>
+                <div class="login-footer">Dilindungi oleh <span>NexaAkademik Security</span> &copy; 2026</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="main-app">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="app-title">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
+                    NexaAkademik Pro
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <button class="top-btn" title="Ganti Tema" onclick="toggleTheme()">
+                    <svg viewBox="0 0 24 24" id="theme-icon-sun"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zm-3.21 13.7l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/></svg>
+                    <svg viewBox="0 0 24 24" id="theme-icon-moon" style="display:none;"><path d="M10 2c-1.82 0-3.53.5-5 1.35C7.99 5.08 10 8.3 10 12s-2.01 6.92-5 8.65C6.47 21.5 8.18 22 10 22c5.52 0 10-4.48 10-10S15.52 2 10 2z"/></svg>
+                </button>
+                <button class="top-btn" title="Fullscreen" onclick="toggleFullscreen()">
+                    <svg viewBox="0 0 24 24" id="fs-expand"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                    <svg viewBox="0 0 24 24" id="fs-collapse" style="display:none;"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>
+                </button>
+                <div style="width: 2px; height: 24px; background: rgba(255,255,255,0.3); margin: 0 5px;"></div>
+                <button class="top-btn" onclick="toggleProfile()" style="background: white; border-radius: 50%; color: var(--primary-dark); font-weight: 800; font-size: 14px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">AD</button>
+            </div>
+        </div>
+
+        <!-- Profile Popup -->
+        <div class="profile-popup" id="profile-popup">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                </div>
+                <h3 style="font-size: 18px; font-weight: 700;">Admin Utama</h3>
+                <p style="font-size: 13px; opacity: 0.9;">Super Administrator</p>
+            </div>
+            <div class="profile-menu">
+                <button onclick="switchTab('profile')">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                    Pengaturan Profil
+                </button>
+                <button onclick="appLogout()" style="color: var(--danger);">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+                    Keluar Sistem
+                </button>
+            </div>
+        </div>
+
+        <!-- Ribbon -->
+        <div class="ribbon-container">
+            <div class="ribbon-tabs">
+                <button class="tab-btn active" onclick="switchTab('dashboard')">Beranda</button>
+                <button class="tab-btn" onclick="switchTab('mahasiswa')">Data Mahasiswa</button>
+                <button class="tab-btn" onclick="switchTab('dosen')">Data Dosen</button>
+                <button class="tab-btn" onclick="switchTab('akademik')">Perkuliahan</button>
+                <button class="tab-btn" onclick="switchTab('keuangan')">Keuangan</button>
+                <button class="tab-btn" onclick="switchTab('pengaturan')">Pengaturan</button>
+            </div>
+
+            <!-- Ribbon Contents -->
+            <div class="ribbon-content active" id="ribbon-dashboard">
+                <div class="ribbon-group" data-title="Aksi">
+                    <button class="ribbon-item" onclick="showToast('Memuat ulang data...')"><svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg><span>Refresh</span></button>
+                    <button class="ribbon-item" onclick="toggleFullscreen()"><svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg><span>Layar Penuh</span></button>
+                </div>
+                <div class="ribbon-group" data-title="Info">
+                    <button class="ribbon-item" onclick="showToast('NexaAkademik Pro v1.0.0')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><span>Info Versi</span></button>
+                    <button class="ribbon-item" onclick="showToast('Cetak ringkasan hari ini...')"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg><span>Cetak</span></button>
+                </div>
+            </div>
+
+            <div class="ribbon-content" id="ribbon-mahasiswa">
+                <div class="ribbon-group" data-title="Mahasiswa">
+                    <button class="ribbon-item" onclick="showToast('Form mahasiswa baru')"><svg viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span>Baru</span></button>
+                    <button class="ribbon-item" onclick="showToast('Import data mahasiswa')"><svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg><span>Import</span></button>
+                    <button class="ribbon-item" onclick="showToast('Export data mahasiswa')"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg><span>Export</span></button>
+                </div>
+                <div class="ribbon-group" data-title="Status">
+                    <button class="ribbon-item" onclick="showToast('Filter: Aktif')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg><span>Aktif</span></button>
+                    <button class="ribbon-item" onclick="showToast('Filter: Cuti')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><span>Cuti</span></button>
+                    <button class="ribbon-item" onclick="showToast('Filter: Alumnu')"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg><span>Alumni</span></button>
+                </div>
+            </div>
+
+            <div class="ribbon-content" id="ribbon-dosen">
+                <div class="ribbon-group" data-title="Dosen">
+                    <button class="ribbon-item" onclick="showToast('Form dosen baru')"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span>Tambah</span></button>
+                    <button class="ribbon-item" onclick="showToast('Cari data dosen')"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg><span>Cari</span></button>
+                </div>
+                <div class="ribbon-group" data-title="Jabatan">
+                    <button class="ribbon-item" onclick="showToast('Filter: Guru Besar')"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg><span>Profesor</span></button>
+                    <button class="ribbon-item" onclick="showToast('Filter: Lektor')"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span>Lektor</span></button>
+                </div>
+            </div>
+
+            <div class="ribbon-content" id="ribbon-akademik">
+                <div class="ribbon-group" data-title="Penjadwalan">
+                    <button class="ribbon-item" onclick="showToast('Buat jadwal baru')"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg><span>Baru</span></button>
+                    <button class="ribbon-item" onclick="showToast('Lihat semua jadwal')"><svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg><span>Jadwal</span></button>
+                </div>
+                <div class="ribbon-group" data-title="Kurikulum">
+                    <button class="ribbon-item" onclick="showToast('Kelola Mata Kuliah')"><svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z"/></svg><span>Mata Kuliah</span></button>
+                </div>
+            </div>
+
+            <div class="ribbon-content" id="ribbon-keuangan">
+                <div class="ribbon-group" data-title="Pembayaran">
+                    <button class="ribbon-item" onclick="showToast('Laporan Pembayaran UKT')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg><span>SPP/UKT</span></button>
+                    <button class="ribbon-item" onclick="showToast('Generate Tagihan')"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg><span>Tagihan</span></button>
+                </div>
+                <div class="ribbon-group" data-title="Beasiswa">
+                    <button class="ribbon-item" onclick="showToast('Kelola Beasiswa')"><svg viewBox="0 0 24 24"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/></svg><span>Beasiswa</span></button>
+                </div>
+            </div>
+
+            <div class="ribbon-content" id="ribbon-pengaturan">
+                <div class="ribbon-group" data-title="Sistem">
+                    <button class="ribbon-item" onclick="showToast('Konfigurasi sistem terbuka')"><svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98 0-.34-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49-.12.64l2.11 1.65c-.04.32-.07.65-.07.98 0 .33.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg><span>Konfigurasi</span></button>
+                    <button class="ribbon-item" onclick="showToast('Pengaturan keamanan terbuka')"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg><span>Keamanan</span></button>
+                </div>
+                <div class="ribbon-group" data-title="Perangkat">
+                    <button class="ribbon-item" onclick="connectDevice('Printer')"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg><span>Printer</span></button>
+                    <button class="ribbon-item" onclick="connectDevice('Layar Display')"><svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg><span>Display</span></button>
+                </div>
+                <div class="ribbon-group" data-title="Backup">
+                    <button class="ribbon-item" onclick="showToast('Backup data berhasil!')"><svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg><span>Backup</span></button>
+                </div>
+            </div>
+            
+            <div class="ribbon-content" id="ribbon-profile"></div>
+        </div>
+
+        <!-- content areas -->
+        <div class="content-area active" id="view-dashboard">
+            <h2 style="font-size: 22px; margin-bottom: 20px; font-weight: 700;">Dashboard Utama</h2>
+            <div class="card-grid">
+                <div class="stat-card"><h3>Total Mahasiswa</h3><div class="value" style="color: var(--primary)">4.250</div></div>
+                <div class="stat-card"><h3>Dosen Aktif</h3><div class="value" style="color: #0891b2">185</div></div>
+                <div class="stat-card"><h3>Ruang Kelas</h3><div class="value" style="color: var(--success)">42</div></div>
+                <div class="stat-card"><h3>Tagihan UKT</h3><div class="value" style="color: var(--danger)">120</div></div>
+            </div>
+            
+            <div class="dashboard-row">
+                <div class="chart-container">
+                    <h3 style="margin-bottom: 20px; font-size: 15px; color: var(--text-muted); text-transform: uppercase;">Aktivitas Semester Ini</h3>
+                    <canvas id="liveChart"></canvas>
+                </div>
+                <div class="news-container">
+                    <div class="news-header">
+                        <h3 style="font-size: 15px; color: var(--text-muted); text-transform: uppercase;">Pengumuman</h3>
+                        <button class="btn-pay" style="padding: 6px 12px; font-size: 11px;">Semua</button>
+                    </div>
+                    <div id="news-list-content" class="news-list">
+                        <!-- JS inject -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-area" id="view-mahasiswa">
+            <h2 style="font-size: 22px; margin-bottom: 20px; font-weight: 700;">Data Mahasiswa</h2>
+            <div class="table-container"><table class="excel-table">
+                <thead><tr><th>NIM</th><th>Nama Mahasiswa</th><th>Prodi</th><th>Angkatan</th><th>IPK</th><th>Status</th></tr></thead>
+                <tbody>
+                    <tr><td style="font-family:monospace;">202401001</td><td style="font-weight:600;">Budiman Santoso</td><td>Teknik Informatika</td><td>2024</td><td>3.85</td><td style="color:var(--success);font-weight:600;">Aktif</td></tr>
+                    <tr><td style="font-family:monospace;">202401002</td><td style="font-weight:600;">Siti Rahmawati</td><td>Sistem Informasi</td><td>2024</td><td>3.92</td><td style="color:var(--success);font-weight:600;">Aktif</td></tr>
+                    <tr><td style="font-family:monospace;">202202015</td><td style="font-weight:600;">Andi Wijaya</td><td>Manajemen Informatika</td><td>2022</td><td>3.45</td><td style="color:#f59e0b;font-weight:600;">Cuti</td></tr>
+                    <tr><td style="font-family:monospace;">202001045</td><td style="font-weight:600;">Rizky Pratama</td><td>Teknik Informatika</td><td>2020</td><td>3.60</td><td style="color:var(--primary);font-weight:600;">Lulus</td></tr>
+                </tbody>
+            </table></div>
+        </div>
+
+        <div class="content-area" id="view-dosen">
+            <h2 style="font-size: 22px; margin-bottom: 20px; font-weight: 700;">Data Dosen</h2>
+            <div class="table-container"><table class="excel-table">
+                <thead><tr><th>NIDN</th><th>Nama Dosen</th><th>Jabatan</th><th>Homebase</th><th>Email</th><th>Status</th></tr></thead>
+                <tbody>
+                    <tr><td style="font-family:monospace;">0012058501</td><td style="font-weight:600;">Dr. Eng. Herianto</td><td>Lektor Kepala</td><td>Informatika</td><td>heri@univ.ac.id</td><td style="color:var(--success);font-weight:600;">Aktif</td></tr>
+                    <tr><td style="font-family:monospace;">0025087702</td><td style="font-weight:600;">Prof. M. Syukri</td><td>Guru Besar</td><td>Sistem Informasi</td><td>syukri@univ.ac.id</td><td style="color:var(--success);font-weight:600;">Aktif</td></tr>
+                    <tr><td style="font-family:monospace;">0010109003</td><td style="font-weight:600;">Anisa Bahar, M.T.</td><td>Asisten Ahli</td><td>Informatika</td><td>anisa@univ.ac.id</td><td style="color:var(--success);font-weight:600;">Aktif</td></tr>
+                </tbody>
+            </table></div>
+        </div>
+
+        <div class="content-area" id="view-akademik">
+            <h2 style="font-size: 22px; margin-bottom: 20px; font-weight: 700;">Jadwal Perkuliahan</h2>
+            <div class="table-container"><table class="excel-table">
+                <thead><tr><th>Kode</th><th>Mata Kuliah</th><th>Dosen</th><th>Ruang</th><th>Waktu</th><th>SKS</th></tr></thead>
+                <tbody>
+                    <tr><td style="font-family:monospace;">IF101</td><td style="font-weight:600;">Pemrograman Dasar</td><td>Anissa, M.T.</td><td>Lab 01</td><td>Senin, 08:00</td><td>3</td></tr>
+                    <tr><td style="font-family:monospace;">IF205</td><td style="font-weight:600;">Struktur Data</td><td>Dr. Herianto</td><td>R. 302</td><td>Selasa, 10:00</td><td>4</td></tr>
+                    <tr><td style="font-family:monospace;">SI302</td><td style="font-weight:600;">Basis Data Lanjut</td><td>Prof. Syukri</td><td>Lab 03</td><td>Rabu, 13:00</td><td>3</td></tr>
+                </tbody>
+            </table></div>
+        </div>
+
+        <div class="content-area" id="view-keuangan">
+            <h2 style="font-size: 22px; margin-bottom: 20px; font-weight: 700;">Manajemen Keuangan (UKT)</h2>
+            <div class="table-container"><table class="excel-table">
+                <thead><tr><th>NIM</th><th>Nama</th><th>Tagihan</th><th>Potongan</th><th>Total Bayar</th><th>Status</th></tr></thead>
+                <tbody>
+                    <tr><td>202401001</td><td style="font-weight:600;">Budiman Santoso</td><td>Rp 5.500.000</td><td>Rp 0</td><td>Rp 5.500.000</td><td style="color:var(--success);font-weight:600;">Lunas</td></tr>
+                    <tr><td>202401002</td><td style="font-weight:600;">Siti Rahmawati</td><td>Rp 5.500.000</td><td>Rp 5.500.000</td><td>Rp 0</td><td style="color:var(--primary);font-weight:600;">Beasiswa</td></tr>
+                    <tr><td>202202015</td><td style="font-weight:600;">Andi Wijaya</td><td>Rp 4.500.000</td><td>Rp 0</td><td>Rp 4.500.000</td><td style="color:var(--danger);font-weight:600;">Belum Bayar</td></tr>
+                </tbody>
+            </table></div>
+        </div>
+
+        <div class="content-area" id="view-profile">
+            <h2 style="font-size: 22px; margin-bottom: 20px; font-weight: 700;">Pengaturan Akun</h2>
+            <div style="background: var(--bg-glass); padding: 30px; border-radius: 16px; border: 1px solid var(--border); max-width: 500px; box-shadow: var(--shadow);">
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div><label style="display:block;margin-bottom:8px;font-size:13px;color:var(--text-muted);font-weight:600;">Username</label><input type="text" value="admin_utama" disabled style="width:100%;background:var(--input-bg);opacity:0.7;"></div>
+                    <div><label style="display:block;margin-bottom:8px;font-size:13px;color:var(--text-muted);font-weight:600;">Password Baru</label><input type="password" placeholder="••••••••" style="width:100%;"></div>
+                    <button class="btn-pay" style="padding:12px;font-size:15px;margin-top:10px;">Simpan Perubahan</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-area" id="view-pengaturan">
+            <h2 style="font-size: 22px; margin-bottom: 20px; font-weight: 700;">Pengaturan Kampus</h2>
+            <div class="card-grid">
+                <div style="background: var(--bg-glass); padding: 30px; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow);">
+                    <h3 style="margin-bottom:15px; font-weight:600;">Identitas Universitas</h3>
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <div><label style="display:block;margin-bottom:8px;font-size:13px;color:var(--text-muted);font-weight:600;">Nama Institusi</label><input type="text" value="Universitas Nusantara Advanced" style="width:100%;"></div>
+                        <div><label style="display:block;margin-bottom:8px;font-size:13px;color:var(--text-muted);font-weight:600;">Kode PT</label><input type="text" value="PT-00123" style="width:100%;"></div>
+                        <button class="btn-pay" style="padding:10px;font-size:14px;margin-top:5px;">Simpan</button>
+                    </div>
+                </div>
+                <div style="background: var(--bg-glass); padding: 30px; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow);">
+                    <h3 style="margin-bottom:15px; font-weight:600;">Tahun Akademik</h3>
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <div><label style="display:block;margin-bottom:8px;font-size:13px;color:var(--text-muted);font-weight:600;">Semester Aktif</label><input type="text" value="2024/2025 Ganjil" style="width:100%;"></div>
+                        <div><label style="display:block;margin-bottom:8px;font-size:13px;color:var(--text-muted);font-weight:600;">Tgl Mulai KRS</label><input type="date" value="2024-09-01" style="width:100%;"></div>
+                        <button class="btn-pay" style="padding:10px;font-size:14px;margin-top:5px;">Perbarui</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+
+        function connectDevice(name) { showToast('Menghubungkan ' + name + '... Pastikan perangkat aktif.'); }
+
+        const newsData = [
+            { id: 1, title: 'Registrasi Semester Ganjil 2024/2025 Dibuka', date: '15 AGU 2024' },
+            { id: 2, title: 'Pengumuman Wisuda Periode III Tahun 2024', date: '20 SEP 2024' },
+            { id: 3, title: 'Kuliah Umum: Implementasi AI dalam Pendidikan', date: '05 OKT 2024' },
+            { id: 4, title: 'Batas Akhir Penyerahan Nilai UTS', date: '12 OKT 2024' }
+        ];
+
+        let chartCtx;
+        let chartData = Array.from({length: 15}, () => Math.floor(Math.random() * 40) + 30);
+
+        function showToast(msg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="var(--primary)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>${msg}`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 3000);
+        }
+
+        function appLogin() {
+            document.getElementById('login-page').style.display = 'none';
+            document.getElementById('main-app').style.display = 'flex';
+            showToast('Selamat datang di NexaAkademik!');
+            renderNews();
+            drawLiveChart();
+        }
+
+        function renderNews() {
+            const cont = document.getElementById('news-list-content');
+            if(cont) cont.innerHTML = newsData.map(n => `
+                <div class="news-item">
+                    <span class="date">${n.date}</span>
+                    <div class="title">${n.title}</div>
+                </div>
+            `).join('');
+        }
+
+        function appLogout() {
+            document.getElementById('main-app').style.display = 'none';
+            document.getElementById('login-page').style.display = 'flex';
+            document.getElementById('profile-popup').classList.remove('active');
+            showToast('Sesi diakhiri.');
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.tab-btn[onclick*="${tab}"]`)?.classList.add('active');
+            
+            document.querySelectorAll('.ribbon-content').forEach(r => r.classList.remove('active'));
+            document.getElementById('ribbon-' + tab)?.classList.add('active');
+            
+            document.querySelectorAll('.content-area').forEach(c => c.classList.remove('active'));
+            document.getElementById('view-' + tab).classList.add('active');
+            document.getElementById('profile-popup').classList.remove('active');
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.getAttribute('data-theme') === 'light';
+            html.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            // swap icons in top bar
+            const sun = document.getElementById('theme-icon-sun');
+            const moon = document.getElementById('theme-icon-moon');
+            if(sun && moon) { sun.style.display = isDark ? 'none' : 'block'; moon.style.display = isDark ? 'block' : 'none'; }
+            // swap icons in login
+            document.querySelectorAll('.login-sun').forEach(s => s.style.display = isDark ? 'none' : 'block');
+            document.querySelectorAll('.login-moon').forEach(m => m.style.display = isDark ? 'block' : 'none');
+        }
+
+        function toggleFullscreen() {
+            if(!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+                document.getElementById('fs-expand').style.display = 'none';
+                document.getElementById('fs-collapse').style.display = 'block';
+            } else {
+                document.exitFullscreen();
+                document.getElementById('fs-expand').style.display = 'block';
+                document.getElementById('fs-collapse').style.display = 'none';
+            }
+        }
+
+        function openManualAddModal() {
+            document.getElementById('manual-add-modal').style.display = 'flex';
+            const m = document.getElementById('modal-product-list');
+            m.innerHTML = products.map(p => `
+                <div onclick="addFromModal(${p.id})" style="display:flex; justify-content:space-between; align-items:center; padding:15px; background:var(--input-bg); border:1px solid var(--border); border-radius:12px; cursor:pointer;" class="modal-list-item" data-name="${p.name.toLowerCase()}">
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <img src="${p.img}" style="width:40px; height:40px; border-radius:6px; object-fit:cover;">
+                        <span style="font-weight:600; font-size:15px;">${p.name}</span>
+                    </div>
+                    <span style="color:var(--primary); font-weight:bold;">${formatRp(p.price)}</span>
+                </div>
+            `).join('');
+            document.getElementById('modalSearch').value = '';
+            document.getElementById('modalSearch').focus();
+        }
+        
+        function closeManualAddModal() { document.getElementById('manual-add-modal').style.display = 'none'; document.getElementById('beeposScanner')?.focus(); }
+        
+        function addFromModal(id) {
+            addToCart(id);
+            closeManualAddModal();
+            showToast('Item ditambahkan');
+        }
+        
+        function filterModalProducts() {
+            const val = document.getElementById('modalSearch').value.toLowerCase();
+            document.querySelectorAll('.modal-list-item').forEach(item => {
+                item.style.display = item.getAttribute('data-name').includes(val) ? 'flex' : 'none';
+            });
+        }
+        
+        function toggleProfile() {
+            document.getElementById('profile-popup').classList.toggle('active');
+        }
+
+        function processPayment() {
+            showToast('Memproses Tagihan UKT...');
+            setTimeout(() => { showToast('Pembayaran Berhasil Diverifikasi!'); }, 1200);
+        }
+
+        function drawLiveChart() {
+            const canvas = document.getElementById('liveChart');
+            if(!canvas) return;
+            chartCtx = canvas.getContext('2d');
+            
+            function render() {
+                if(document.getElementById('view-dashboard').classList.contains('active')) {
+                    const W = canvas.width = canvas.parentElement.clientWidth;
+                    const H = canvas.height = canvas.parentElement.clientHeight - 40;
+                    const ctx = chartCtx;
+                    ctx.clearRect(0,0,W,H);
+                    
+                    // Grid Lines
+                    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    for(let i=1; i<5; i++) { 
+                        let y = (H/5) * i;
+                        ctx.moveTo(0, y); ctx.lineTo(W, y); 
+                    }
+                    ctx.stroke();
+
+                    // Area Chart Teal
+                    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+                    ctx.strokeStyle = primaryColor;
+                    ctx.lineWidth = 3;
+                    ctx.lineJoin = 'round';
+                    ctx.lineCap = 'round';
+                    
+                    ctx.beginPath();
+                    const step = W / (chartData.length - 1);
+                    
+                    // Draw smoother line with Bezier or just cleaner points
+                    for(let i=0; i<chartData.length; i++) {
+                        let x = i * step; 
+                        let y = H - (chartData[i] / 100 * (H - 20)) - 10;
+                        i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+                    }
+                    ctx.stroke();
+
+                    // Gradient Fill
+                    ctx.lineTo(W, H); ctx.lineTo(0, H);
+                    const grad = ctx.createLinearGradient(0, 0, 0, H);
+                    grad.addColorStop(0, primaryColor + '44');
+                    grad.addColorStop(1, primaryColor + '00');
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+
+                    // Points
+                    chartData.forEach((val, i) => {
+                        let x = i * step;
+                        let y = H - (val / 100 * (H - 20)) - 10;
+                        ctx.fillStyle = primaryColor;
+                        ctx.beginPath();
+                        ctx.arc(x, y, 4, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = 'white';
+                        ctx.beginPath();
+                        ctx.arc(x, y, 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                }
+                setTimeout(() => requestAnimationFrame(render), 100);
+            }
+            render();
+            setInterval(() => { 
+                chartData.shift(); 
+                chartData.push(Math.floor(Math.random() * 30) + 40); 
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
