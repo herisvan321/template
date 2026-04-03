@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaLMS Pro - Learning Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* === TEMA & VARIABEL LMS (VIOLET) === */
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --bg-main: #f5f3ff; /* Light Violet background */
+            --bg-glass: rgba(255, 255, 255, 0.8);
+            --bg-blur: blur(20px);
+            --text-main: #1e1b4b;
+            --text-muted: #64748b;
+            --border: rgba(99, 102, 241, 0.15);
+            --hover: rgba(99, 102, 241, 0.08);
+            --active-tab: #ffffff;
+            --danger: #f43f5e;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --card-space: #ffffff;
+            --shadow: 0 4px 20px rgba(99, 102, 241, 0.06);
+            --shadow-hover: 0 10px 30px rgba(99, 102, 241, 0.12);
+            --input-bg: #f8fafc;
+        }
+
+        [data-theme="dark"] {
+            --primary: #818cf8;
+            --primary-light: #a5b4fc;
+            --primary-dark: #6366f1;
+            --bg-main: #0c0a09;
+            --bg-glass: rgba(30, 27, 75, 0.7);
+            --border: rgba(129, 211, 238, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --hover: rgba(129, 211, 238, 0.12);
+            --active-tab: #1e1b4b;
+            --card-space: #1e1b4b;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 10px 30px rgba(129, 211, 238, 0.15);
+            --input-bg: #1e1b4b;
+        }
+
+        /* === RESET === */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { 
+            background-color: var(--bg-main);
+            color: var(--text-main); 
+            overflow: hidden; 
+            transition: all 0.4s ease; 
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-size: 80px 35px;
+            background-image: 
+                linear-gradient(to right, var(--border) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+        }
+        button { cursor: pointer; border: none; background: none; color: inherit; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        input, select { 
+            background: var(--input-bg); 
+            color: var(--text-main); 
+            border: 1px solid var(--border); 
+            border-radius: 10px; 
+            padding: 12px 16px;
+            outline: none;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
+
+        /* === TOAST === */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; }
+        .toast { 
+            background: var(--bg-glass); 
+            backdrop-filter: var(--bg-blur);
+            border-left: 4px solid var(--primary);
+            color: var(--text-main); 
+            padding: 14px 24px; 
+            border-radius: 12px; 
+            box-shadow: var(--shadow); 
+            animation: slideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px;
+            font-weight: 500;
+        }
+        @keyframes slideIn { from { transform: translateX(120%) scale(0.9); opacity: 0; } to { transform: translateX(0) scale(1); opacity: 1; } }
+
+        /* === LOGIN PAGE === */
+        #login-page { height: 100vh; display: flex; position: relative; overflow: hidden; }
+        .login-left {
+            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4f46e5 100%);
+            color: white; padding: 60px; position: relative; overflow: hidden;
+        }
+        .login-left::before {
+            content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(129,140,248,0.2) 0%, transparent 70%);
+            top: -200px; right: -200px; animation: floatOrb 12s ease-in-out infinite;
+            filter: blur(40px);
+        }
+        .login-left::after {
+            content: ''; position: absolute; width: 450px; height: 450px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+            bottom: -150px; left: -150px; animation: floatOrb 15s ease-in-out infinite reverse;
+            filter: blur(40px);
+        }
+        @keyframes floatOrb { 0%,100% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(40px,-30px) rotate(10deg); } }
+        
+        .login-left .brand-logo { font-size: 40px; font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; z-index: 2; display: flex; align-items: center; gap: 15px; }
+        .login-left .brand-logo svg { width: 48px; height: 48px; fill: #818cf8; filter: drop-shadow(0 0 15px rgba(129,140,248,0.6)); }
+        .login-left .brand-tagline { font-size: 16px; opacity: 0.7; font-weight: 400; z-index: 2; margin-bottom: 60px; letter-spacing: 2px; text-transform: uppercase; }
+        .login-left .feature-list { z-index: 2; display: flex; flex-direction: column; gap: 24px; padding-left: 20px; border-left: 1px solid rgba(255,255,255,0.1); }
+        .login-left .feature-item { display: flex; align-items: center; gap: 20px; font-size: 15px; font-weight: 500; }
+        .login-left .feature-item .fi-icon { width: 48px; height: 48px; border-radius: 14px; background: rgba(255,255,255,0.06); display: flex; justify-content: center; align-items: center; flex-shrink: 0; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
+        .login-left .feature-item:hover .fi-icon { background: rgba(129,140,248,0.15); border-color: rgba(129,140,248,0.3); transform: scale(1.1); }
+        .login-left .feature-item .fi-icon svg { width: 24px; height: 24px; fill: #818cf8; }
+        
+        .login-grid-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.08;
+            background-size: 40px 40px;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.2) 1px, transparent 1px);
+        }
+
+        .login-right { width: 480px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--bg-main); padding: 40px; position: relative; }
+        [data-theme="dark"] .login-right { background: #020617; }
+        
+        .login-box { width: 100%; max-width: 380px; text-align: left; }
+        .login-box .login-welcome { font-size: 14px; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+        .login-box h2 { color: var(--text-main); margin-bottom: 8px; font-size: 32px; font-weight: 800; }
+        .login-box .login-sub { color: var(--text-muted); margin-bottom: 35px; font-size: 15px; line-height: 1.6; }
+        .login-box label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .login-box input { width: 100%; margin-bottom: 22px; }
+        .login-btn { 
+            width: 100%; padding: 18px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); 
+            color: white; border-radius: 14px; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.35); margin-top: 5px;
+        }
+        .login-btn:hover { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); transform: translateY(-3px); box-shadow: 0 12px 35px rgba(99, 102, 241, 0.5); }
+        
+        .login-theme-toggle { position: absolute; top: 30px; right: 30px; width: 44px; height: 44px; border-radius: 12px; background: var(--input-bg); border: 1px solid var(--border); display: flex; justify-content: center; align-items: center; }
+        .login-theme-toggle svg { width: 22px; height: 22px; fill: var(--text-muted); }
+
+        /* === APLIKASI UTAMA === */
+        #main-app { display: none; height: 100vh; flex-direction: column; }
+        
+        /* TOP BAR */
+        .top-bar { 
+            background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary) 100%);
+            color: white; height: 60px; display: flex; justify-content: space-between; align-items: center; padding: 0 24px; z-index: 50;
+        }
+        .top-bar-left, .top-bar-right { display: flex; align-items: center; gap: 16px; }
+        .app-title { font-weight: 800; font-size: 20px; display: flex; align-items: center; gap: 12px; letter-spacing: -0.5px; }
+        .top-btn { width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; border-radius: 10px; background: rgba(255,255,255,0.1); }
+        .top-btn:hover { background: rgba(255,255,255,0.25); transform: translateY(-2px); }
+        .top-btn svg { width: 22px; height: 22px; fill: white; }
+
+        /* RIBBON */
+        .ribbon-container { background: var(--bg-glass); backdrop-filter: var(--bg-blur); border-bottom: 1px solid var(--border); z-index: 40; }
+        .ribbon-tabs { display: flex; padding: 0 20px; }
+        .tab-btn { padding: 14px 24px; font-size: 14px; font-weight: 500; color: var(--text-muted); position: relative; transition: 0.3s; }
+        .tab-btn:hover { color: var(--primary); }
+        .tab-btn.active { color: var(--primary); font-weight: 700; }
+        .tab-btn.active::after { content: ''; position: absolute; bottom: 0; left: 20%; width: 60%; height: 4px; background: var(--primary); border-radius: 4px 4px 0 0; }
+        
+        .ribbon-content { height: 100px; display: none; align-items: center; padding: 5px 24px; animation: fadeIn 0.3s ease; }
+        .ribbon-content.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .ribbon-group { display: flex; align-items: stretch; border-right: 1px solid var(--border); padding-right: 18px; margin-right: 18px; height: 100%; gap: 10px; position: relative; padding-bottom: 22px; }
+        .ribbon-group::after { content: attr(data-title); position: absolute; bottom: 6px; left: 0; width: 100%; text-align: center; font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .ribbon-item { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; min-width: 75px; border-radius: 12px; font-size: 12px; gap: 8px; font-weight: 500; }
+        .ribbon-item:hover { background: var(--hover); transform: translateY(-2px); color: var(--primary); }
+        .ribbon-item svg { width: 28px; height: 28px; fill: var(--primary); }
+
+        /* CONTENT */
+        .content-area { flex: 1; overflow: hidden; display: none; padding: 24px; }
+        .content-area.active { display: flex; flex-direction: column; animation: fadeIn 0.4s ease; }
+
+        /* DASHBOARD */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 24px; }
+        .stat-card { 
+            background: var(--bg-glass); backdrop-filter: var(--bg-blur); padding: 25px; border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--shadow);
+            position: relative; overflow: hidden; display: flex; flex-direction: column; transition: 0.3s;
+        }
+        .stat-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); border-color: var(--primary); }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(to right, var(--primary), var(--primary-light)); }
+        .stat-card h3 { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; }
+        .stat-card .value { font-size: 36px; font-weight: 800; color: var(--text-main); line-height: 1; }
+        
+        .dashboard-row { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; min-height: 420px; flex: 1; }
+        .chart-container { background: var(--bg-glass); backdrop-filter: var(--bg-blur); padding: 25px; border-radius: 24px; border: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: var(--shadow); }
+        .news-container { background: var(--bg-glass); backdrop-filter: var(--bg-blur); padding: 25px; border-radius: 24px; border: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: var(--shadow); }
+        .news-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+        .news-list { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
+        .news-item { padding: 14px; border-radius: 14px; background: var(--hover); border: 1px solid transparent; transition: 0.3s; cursor: pointer; }
+        .news-item:hover { border-color: var(--primary); transform: translateX(6px); background: rgba(99, 102, 241, 0.12); }
+        .news-item .date { font-size: 11px; color: var(--text-muted); font-weight: 700; margin-bottom: 5px; display: block; }
+        .news-item .title { font-size: 14px; font-weight: 600; color: var(--text-main); line-height: 1.5; }
+
+        /* COURSE GRID */
+        .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; overflow-y: auto; padding-bottom: 30px; }
+        .course-card { 
+            background: var(--card-space); border: 1px solid var(--border); border-radius: 24px; overflow: hidden;
+            box-shadow: var(--shadow); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .course-card:hover { transform: translateY(-12px); box-shadow: var(--shadow-hover); border-color: var(--primary); }
+        .course-img { width: 100%; height: 180px; object-fit: cover; }
+        .course-body { padding: 20px; }
+        .course-category { font-size: 11px; color: var(--primary); font-weight: 700; text-transform: uppercase; margin-bottom: 8px; display: block; }
+        .course-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; line-height: 1.3; }
+        .progress-container { height: 8px; background: var(--hover); border-radius: 10px; margin: 15px 0 10px; overflow: hidden; position: relative; }
+        .progress-bar { height: 100%; background: linear-gradient(to right, var(--primary), var(--primary-light)); border-radius: 10px; transition: 1s cubic-bezier(0.65, 0, 0.35, 1); }
+        .course-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-muted); }
+        .course-footer b { color: var(--primary); }
+
+        /* TABLES */
+        .table-container { background: var(--bg-glass); backdrop-filter: var(--bg-blur); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; box-shadow: var(--shadow); }
+        .excel-table { width: 100%; border-collapse: collapse; }
+        .excel-table th, .excel-table td { padding: 18px 24px; text-align: left; font-size: 14px; border-bottom: 1px solid var(--border); }
+        .excel-table th { background: rgba(99, 102, 241, 0.05); font-weight: 700; color: var(--primary-dark); text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
+        .excel-table tr:hover td { background: var(--hover); }
+
+        /* BUTTONS */
+        .btn-action { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; padding: 10px 20px; border-radius: 12px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3); }
+
+        /* POPUP PROFILE */
+        .profile-popup { position: absolute; top: 70px; right: 24px; width: 320px; background: var(--bg-glass); backdrop-filter: var(--bg-blur); border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; flex-direction: column; z-index: 1000; overflow: hidden; animation: popIn 0.3s ease; }
+        .profile-popup.active { display: flex; }
+        @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .profile-header { padding: 30px; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; text-align: center; }
+        .profile-avatar { width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px; }
+        .profile-avatar svg { width: 45px; height: 45px; fill: var(--primary); }
+        .profile-menu button { width: 100%; padding: 16px 25px; text-align: left; display: flex; align-items: center; gap: 15px; font-weight: 600; transition: 0.2s; border-bottom: 1px solid var(--border); }
+        .profile-menu button:last-child { border-bottom: none; }
+        .profile-menu button:hover { background: var(--hover); color: var(--primary); padding-left: 30px; }
+
+        canvas { width: 100%; flex: 1; }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            .dashboard-row { grid-template-columns: 1fr; height: auto; }
+            .login-left { display: none; }
+            .login-right { width: 100%; }
+            .card-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 600px) {
+            .card-grid { grid-template-columns: 1fr; }
+            .ribbon-tabs { overflow-x: auto; }
+            .top-bar { padding: 0 15px; }
+            .top-btn:not(:last-child) { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <!-- LOGIN PAGE -->
+    <div id="login-page">
+        <div class="login-left">
+            <div class="login-grid-overlay"></div>
+            <div class="brand-logo">
+                <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5.89 12.55L12 15.89l6.11-3.34c.66.36 1.11 1.05 1.11 1.84 0 .5-.18.96-.47 1.33L12 21l-6.75-5.94c-.29-.37-.47-.83-.47-1.33 0-.79.45-1.48 1.11-1.84z"/></svg>
+                NexaLMS Pro
+            </div>
+            <div class="brand-tagline">Learning Management System</div>
+            <div class="feature-list">
+                <div class="feature-item"><div class="fi-icon"><svg viewBox="0 0 24 24"><path d="M12 5V1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg></div><span>Belajar Mandiri & Terstruktur</span></div>
+                <div class="feature-item"><div class="fi-icon"><svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg></div><span>E-Library & Resource Digital</span></div>
+                <div class="feature-item"><div class="fi-icon"><svg viewBox="0 0 24 24"><path d="M11.5 9C10.12 9 9 10.12 9 11.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5S12.88 9 11.5 9zM20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-3.22 14H6.22c-.62 0-1.12-.51-1.12-1.14v-2.01c1.28-1.5 3.32-2.14 6.4-2.14 3.08 0 5.12.64 6.4 2.14v2.01c0 .63-.5 1.14-1.12 1.14z"/></svg></div><span>Interaksi Dosen & Mahasiswa</span></div>
+            </div>
+        </div>
+        <div class="login-right">
+            <button class="login-theme-toggle" onclick="toggleTheme()"><svg viewBox="0 0 24 24"><path d="M10 2c-1.82 0-3.53.5-5 1.35C7.99 5.08 10 8.3 10 12s-2.01 6.92-5 8.65C6.47 21.5 8.18 22 10 22c5.52 0 10-4.48 10-10S15.52 2 10 2z"/></svg></button>
+            <div class="login-box">
+                <div class="login-welcome">Portal Belajar</div>
+                <h2>Masuk Ke LMS</h2>
+                <p class="login-sub">Gunakan akun institusi Anda untuk mulai belajar hari ini.</p>
+                <label>Username (NIM/Email)</label><input type="text" value="student01">
+                <label>Password</label><input type="password" value="password">
+                <button class="login-btn" onclick="appLogin()">Mulai Belajar</button>
+                <div style="margin-top:20px; font-size:12px; color:var(--text-muted); text-align:center;">&copy; 2026 NexaLMS Pro. All Rights Reserved.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="main-app">
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="app-title"><svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg> NexaLMS Pro</div>
+            </div>
+            <div class="top-bar-right">
+                <button class="top-btn" title="Ganti Tema" onclick="toggleTheme()"><svg viewBox="0 0 24 24"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zm-3.21 13.7l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/></svg></button>
+                <button class="top-btn" title="Notifikasi"><svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></button>
+                <div style="width: 1px; height: 24px; background: rgba(255,255,255,0.2);"></div>
+                <button onclick="toggleProfile()" style="background:white; color:var(--primary); font-weight:800; width:38px; height:38px; border-radius:50%; box-shadow:0 0 15px rgba(0,0,0,0.2);">JD</button>
+            </div>
+        </div>
+
+        <div class="profile-popup" id="profile-popup">
+            <div class="profile-header"><div class="profile-avatar"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div><h3>John Doe</h3><p>NIM: 202401001</p></div>
+            <div class="profile-menu">
+                <button><svg viewBox="0 0 24 24" width="18"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg> Riwayat Kursus</button>
+                <button><svg viewBox="0 0 24 24" width="18"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> Sertifikat</button>
+                <button onclick="appLogout()" style="color:var(--danger); border:none;"><svg viewBox="0 0 24 24" width="18"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/></svg> Keluar</button>
+            </div>
+        </div>
+
+        <div class="ribbon-container">
+            <div class="ribbon-tabs">
+                <button class="tab-btn active" onclick="switchTab('dashboard')">Beranda</button>
+                <button class="tab-btn" onclick="switchTab('kursus')">Kursus Saya</button>
+                <button class="tab-btn" onclick="switchTab('tugas')">Tugas & Ujian</button>
+                <button class="tab-btn" onclick="switchTab('materi')">Materi</button>
+                <button class="tab-btn" onclick="switchTab('sertifikat')">Sertifikat</button>
+                <button class="tab-btn" onclick="switchTab('pengaturan')">Pengaturan</button>
+            </div>
+            <div class="ribbon-content active" id="ribbon-dashboard">
+                <div class="ribbon-group" data-title="Belajar">
+                    <button class="ribbon-item" onclick="switchTab('kursus')"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg><span>Lanjutkan</span></button>
+                    <button class="ribbon-item" onclick="showToast('Memuat Kalender...')"><svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg><span>Jadwal</span></button>
+                </div>
+                <div class="ribbon-group" data-title="Info">
+                    <button class="ribbon-item" onclick="showToast('Daftar Sertifikat')"><svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg><span>Sertifikat</span></button>
+                </div>
+            </div>
+            <div class="ribbon-content" id="ribbon-kursus">
+                <div class="ribbon-group" data-title="Manajemen Kursus">
+                    <button class="ribbon-item" onclick="switchTab('kursus')"><svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg><span>Daftar</span></button>
+                    <button class="ribbon-item" onclick="showToast('Eksplor Kursus Baru')"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg><span>Cari</span></button>
+                </div>
+                <div class="ribbon-group" data-title="Resource">
+                    <button class="ribbon-item" onclick="showToast('Download Semua')"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg><span>Download</span></button>
+                </div>
+            </div>
+            <div class="ribbon-content" id="ribbon-tugas">
+                <div class="ribbon-group" data-title="Tugas & Ujian">
+                    <button class="ribbon-item" onclick="switchTab('tugas')"><svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg><span>List Tugas</span></button>
+                    <button class="ribbon-item" onclick="showToast('Unggah File Jawaban')"><svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg><span>Submit</span></button>
+                </div>
+            </div>
+            <div class="ribbon-content" id="ribbon-materi">
+                <div class="ribbon-group" data-title="Perpustakaan">
+                    <button class="ribbon-item" onclick="switchTab('materi')"><svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg><span>Modul</span></button>
+                    <button class="ribbon-item" onclick="showToast('Koleksi Video')"><svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg><span>Video</span></button>
+                </div>
+            </div>
+            <div class="ribbon-content" id="ribbon-sertifikat">
+                <div class="ribbon-group" data-title="Penghargaan">
+                    <button class="ribbon-item" onclick="showToast('Unduh Semua Sertifikat')"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg><span>Unduh Semua</span></button>
+                </div>
+            </div>
+            <div class="ribbon-content" id="ribbon-pengaturan">
+                <div class="ribbon-group" data-title="Akun">
+                    <button class="ribbon-item" onclick="switchTab('profile')"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span>Profil Full</span></button>
+                    <button class="ribbon-item" onclick="appLogout()"><svg viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/></svg><span>Keluar</span></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENT AREAS -->
+        <div class="content-area active" id="view-dashboard">
+            <h2 style="font-size: 24px; margin-bottom: 24px; font-weight: 800;">Apa kabar, John? 👋</h2>
+            <div class="card-grid">
+                <div class="stat-card"><h3>Kursus Aktif</h3><div class="value" style="color: var(--primary)">4</div></div>
+                <div class="stat-card"><h3>Tugas Pending</h3><div class="value" style="color: var(--warning)">2</div></div>
+                <div class="stat-card"><h3>Jam Belajar (Minggu Ini)</h3><div class="value" style="color: var(--success)">12.5</div></div>
+                <div class="stat-card"><h3>Indeks Prestasi</h3><div class="value" style="color: var(--primary-dark)">3.92</div></div>
+            </div>
+            <div class="dashboard-row">
+                <div class="chart-container">
+                    <h3 style="margin-bottom: 20px; font-size: 14px; color: var(--text-muted); font-weight:700; text-transform:uppercase;">Intensitas Belajar</h3>
+                    <canvas id="liveChart"></canvas>
+                </div>
+                <div class="news-container">
+                    <div class="news-header"><h3 style="font-size: 14px; font-weight:700; text-transform:uppercase;">Deadline Mendatang</h3></div>
+                    <div id="news-list-content" class="news-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-area" id="view-kursus">
+            <h2 style="font-size: 24px; margin-bottom: 24px; font-weight: 800;">Kursus Saya</h2>
+            <div class="course-grid">
+                <div class="course-card">
+                    <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=400" class="course-img">
+                    <div class="course-body">
+                        <span class="course-category">Development</span>
+                        <div class="course-title">Fullstack Web Development with React & Node.js</div>
+                        <div style="font-size:13px; display:flex; justify-content:space-between; color:var(--text-muted);">Progres <b>75%</b></div>
+                        <div class="progress-container"><div class="progress-bar" style="width: 75%;"></div></div>
+                        <button class="btn-action" style="width:100%; margin-top:10px;">Lanjutkan Belajar</button>
+                    </div>
+                </div>
+                <div class="course-card">
+                    <img src="https://images.unsplash.com/photo-1586717791821-3f44a563eb4c?auto=format&fit=crop&w=400" class="course-img">
+                    <div class="course-body">
+                        <span class="course-category">Design</span>
+                        <div class="course-title">Mastering UI/UX Design: From Zero to Pro</div>
+                        <div style="font-size:13px; display:flex; justify-content:space-between; color:var(--text-muted);">Progres <b>30%</b></div>
+                        <div class="progress-container"><div class="progress-bar" style="width: 30%;"></div></div>
+                        <button class="btn-action" style="width:100%; margin-top:10px;">Lanjutkan Belajar</button>
+                    </div>
+                </div>
+                <div class="course-card">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=400" class="course-img">
+                    <div class="course-body">
+                        <span class="course-category">Data Science</span>
+                        <div class="course-title">Data Analytics with Python & Pandas</div>
+                        <div style="font-size:13px; display:flex; justify-content:space-between; color:var(--text-muted);">Progres <b>90%</b></div>
+                        <div class="progress-container"><div class="progress-bar" style="width: 90%;"></div></div>
+                        <button class="btn-action" style="width:100%; margin-top:10px;">Lanjutkan Belajar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-area" id="view-tugas">
+            <h2 style="font-size: 24px; margin-bottom: 24px; font-weight: 800;">Tugas & Ujian</h2>
+            <div class="table-container">
+                <table class="excel-table">
+                    <thead><tr><th>Nama Tugas</th><th>Kursus</th><th>Batas Waktu</th><th>Status</th><th>Aksi</th></tr></thead>
+                    <tbody>
+                        <tr><td>Final Project: E-Commerce</td><td>Web Development</td><td>12 OKT 2024</td><td style="color:var(--warning); font-weight:700;">Belum Selesai</td><td><button class="btn-action">Upload</button></td></tr>
+                        <tr><td>Quiz: Wireframing</td><td>UI/UX Design</td><td>05 OKT 2024</td><td style="color:var(--success); font-weight:700;">Selesai</td><td><button class="btn-action" style="filter:grayscale(1);">Lihat</button></td></tr>
+                        <tr><td>Analisis Data Titanic</td><td>Data Science</td><td>01 OKT 2024</td><td style="color:var(--success); font-weight:700;">Selesai</td><td><button class="btn-action" style="filter:grayscale(1);">Lihat</button></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="content-area" id="view-materi">
+            <h2 style="font-size: 24px; margin-bottom: 24px; font-weight: 800;">Materi & Resource</h2>
+            <div class="table-container">
+                <table class="excel-table">
+                    <thead><tr><th>Tipe</th><th>Nama Materi</th><th>Kursus</th><th>Ditambahkan</th><th>Aksi</th></tr></thead>
+                    <tbody>
+                        <tr><td>📄 PDF</td><td>Modul 01: Pengenalan React</td><td>Web Development</td><td>10 SEP 2024</td><td><button class="btn-action">Unduh</button></td></tr>
+                        <tr><td>🎬 Video</td><td>Prinsip Tipografi dalam UI</td><td>UI/UX Design</td><td>12 SEP 2024</td><td><button class="btn-action">Tonton</button></td></tr>
+                        <tr><td>📦 Zip</td><td>Dataset Housing Price</td><td>Data Science</td><td>14 SEP 2024</td><td><button class="btn-action">Unduh</button></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="content-area" id="view-profile">
+            <h2 style="font-size: 24px; margin-bottom: 24px; font-weight: 800;">Profil Saya</h2>
+            <div style="background: var(--bg-glass); padding: 40px; border-radius: 24px; border: 1px solid var(--border); max-width: 600px; box-shadow: var(--shadow); display: flex; gap: 30px; align-items: flex-start;">
+                <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--primary); display: flex; justify-content: center; align-items: center; color: white; font-size: 40px; font-weight: 800;">JD</div>
+                <div style="flex: 1;">
+                    <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 5px;">John Doe</h3>
+                    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Mahasiswa Teknik Informatika - Angkatan 2024</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div><label style="display:block;margin-bottom:5px;font-size:11px;color:var(--text-muted);font-weight:700;text-transform:uppercase;">NIM</label><input type="text" value="202401001" disabled style="width:100%; opacity: 0.7;"></div>
+                        <div><label style="display:block;margin-bottom:5px;font-size:11px;color:var(--text-muted);font-weight:700;text-transform:uppercase;">Email</label><input type="text" value="john.doe@univ.ac.id" style="width:100%;"></div>
+                    </div>
+                    <button class="btn-action" style="margin-top: 20px;">Ubah Profil</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-area" id="view-sertifikat">
+            <h2 style="font-size: 24px; margin-bottom: 24px; font-weight: 800;">Sertifikat & Pencapaian</h2>
+            <div class="course-grid">
+                <div class="course-card" style="padding: 20px; text-align: center; border: 2px dashed var(--primary);">
+                    <div style="font-size: 50px; margin-bottom: 15px;">📜</div>
+                    <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 10px;">Fullstack Web Development</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Diberikan pada 20 Sep 2024</p>
+                    <button class="btn-action" style="width: 100%;">Cetak Sertifikat</button>
+                </div>
+                <div class="course-card" style="padding: 20px; text-align: center; border: 1px solid var(--border); opacity: 0.6;">
+                    <div style="font-size: 50px; margin-bottom: 15px; filter: grayscale(1);">🔒</div>
+                    <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 10px;">Mastering UI/UX Design</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Selesaikan kursus untuk membuka</p>
+                    <button class="btn-action" disabled style="width: 100%; background: var(--text-muted);">Terkunci</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-area" id="view-pengaturan">
+            <h2 style="font-size: 24px; margin-bottom: 24px; font-weight: 800;">Pengaturan LMS</h2>
+            <div class="card-grid">
+                <div class="stat-card" style="padding: 30px;">
+                    <h3 style="margin-bottom:15px; font-weight:700;">Preferensi Belajar</h3>
+                    <div style="display:flex; flex-direction:column; gap:15px;">
+                        <div><label style="display:block;margin-bottom:8px;font-size:12px;color:var(--text-muted);font-weight:700;text-transform:uppercase;">Notifikasi Email</label><select style="width:100%;"><option>Aktif</option><option>Non-Aktif</option></select></div>
+                        <button class="btn-action">Simpan Perbarui</button>
+                    </div>
+                </div>
+                <div class="stat-card" style="padding: 30px;">
+                    <h3 style="margin-bottom:15px; font-weight:700;">Keamanan</h3>
+                    <div style="display:flex; flex-direction:column; gap:15px;">
+                        <div><label style="display:block;margin-bottom:8px;font-size:12px;color:var(--text-muted);font-weight:700;text-transform:uppercase;">Ganti Password</label><input type="password" placeholder="••••••••" style="width:100%;"></div>
+                        <button class="btn-action">Update Password</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+
+        const deadlines = [
+            { id: 1, title: 'Final Project Web Development', date: 'Besok, 23:59' },
+            { id: 2, title: 'Ujian Tengah Semester UI/UX', date: 'Senin, 08:00' },
+            { id: 3, title: 'Tugas Mandiri Data Science', date: 'Rabu, 12 OKT' }
+        ];
+
+        let chartData = Array.from({length: 12}, () => Math.floor(Math.random() * 50) + 20);
+
+        function showToast(msg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="var(--primary)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>${msg}`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 3000);
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            document.documentElement.setAttribute('data-theme', current === 'light' ? 'dark' : 'light');
+            showToast('Tema diubah ke ' + (current === 'light' ? 'Gelap' : 'Terang'));
+        }
+
+        function toggleProfile() {
+            document.getElementById('profile-popup').classList.toggle('active');
+        }
+
+        function appLogin() {
+            document.getElementById('login-page').style.display = 'none';
+            document.getElementById('main-app').style.display = 'flex';
+            showToast('Selamat datang, John Doe!');
+            renderDeadlines();
+            drawLiveChart();
+        }
+
+        function appLogout() {
+            location.reload();
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.tab-btn[onclick*="${tab}"]`)?.classList.add('active');
+            
+            document.querySelectorAll('.ribbon-content').forEach(r => r.classList.remove('active'));
+            document.getElementById('ribbon-' + tab)?.classList.add('active');
+            
+            document.querySelectorAll('.content-area').forEach(c => c.classList.remove('active'));
+            document.getElementById('view-' + tab)?.classList.add('active');
+            
+            if(tab === 'dashboard') drawLiveChart();
+        }
+
+        function renderDeadlines() {
+            const cont = document.getElementById('news-list-content');
+            if(cont) cont.innerHTML = deadlines.map(d => `
+                <div class="news-item">
+                    <span class="date">${d.date}</span>
+                    <div class="title">${d.title}</div>
+                </div>
+            `).join('');
+        }
+
+        function drawLiveChart() {
+            const canvas = document.getElementById('liveChart');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            function render() {
+                if(document.getElementById('view-dashboard').classList.contains('active')) {
+                    const W = canvas.width = canvas.parentElement.clientWidth;
+                    const H = canvas.height = canvas.parentElement.clientHeight - 40;
+                    ctx.clearRect(0,0,W,H);
+                    
+                    // Grid
+                    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
+                    ctx.beginPath();
+                    for(let i=1; i<5; i++) { let y = (H/5)*i; ctx.moveTo(0, y); ctx.lineTo(W, y); }
+                    ctx.stroke();
+
+                    // Line
+                    const primary = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+                    ctx.strokeStyle = primary;
+                    ctx.lineWidth = 4;
+                    ctx.lineJoin = 'round';
+                    ctx.beginPath();
+                    const step = W / (chartData.length - 1);
+                    for(let i=0; i<chartData.length; i++) {
+                        let x = i * step; let y = H - (chartData[i] / 100 * (H-20)) - 10;
+                        i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+                    }
+                    ctx.stroke();
+
+                    // Fill
+                    ctx.lineTo(W, H); ctx.lineTo(0, H);
+                    const grad = ctx.createLinearGradient(0,0,0,H);
+                    grad.addColorStop(0, primary + '44');
+                    grad.addColorStop(1, primary + '00');
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+
+                    // Points
+                    chartData.forEach((val, i) => {
+                        let x = i * step; let y = H - (val / 100 * (H-20)) - 10;
+                        ctx.fillStyle = primary;
+                        ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fill();
+                        ctx.fillStyle = 'white';
+                        ctx.beginPath(); ctx.arc(x,y,2,0,Math.PI*2); ctx.fill();
+                    });
+                }
+            }
+            render();
+            window.onresize = render;
+            setInterval(() => { 
+                chartData.shift(); 
+                chartData.push(Math.floor(Math.random()*40)+30); 
+                render();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
